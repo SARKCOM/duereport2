@@ -76,36 +76,24 @@ function displayResults(results) {
         return;
     }
 
-    const table = document.createElement('table');
-    table.setAttribute('border', '1');
-
-    // Create table header
-    const headers = excelData[0];
-    const thead = document.createElement('thead');
-    const headerRow = document.createElement('tr');
-
-    headers.forEach(header => {
-        const th = document.createElement('th');
-        th.textContent = header;
-        headerRow.appendChild(th);
-    });
-
-    thead.appendChild(headerRow);
-    table.appendChild(thead);
-
-    // Create table body
-    const tbody = document.createElement('tbody');
-
     results.forEach(result => {
-        const row = document.createElement('tr');
-        result.forEach((cell, index) => {
-            const td = document.createElement('td');
-            td.textContent = `${headers[index]}: ${cell}`;
-            row.appendChild(td);
-        });
-        tbody.appendChild(row);
-    });
+        const table = document.createElement('table');
+        const tbody = document.createElement('tbody');
 
-    table.appendChild(tbody);
-    resultsDiv.appendChild(table);
+        result.forEach((cell, index) => {
+            const row = document.createElement('tr');
+            const th = document.createElement('th');
+            const td = document.createElement('td');
+
+            th.textContent = excelData[0][index];
+            td.textContent = cell;
+
+            row.appendChild(th);
+            row.appendChild(td);
+            tbody.appendChild(row);
+        });
+
+        table.appendChild(tbody);
+        resultsDiv.appendChild(table);
+    });
 }
