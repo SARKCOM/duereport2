@@ -8,7 +8,7 @@ function checkPassword() {
         document.getElementById('main-container').style.display = 'block';
         loadExcelData(); // Load Excel data after the password is confirmed
     } else {
-        alert('You are not authorized. Please check the password');
+        alert('You are not authorized. Please check the password.');
     }
 }
 
@@ -98,9 +98,9 @@ function displayResults(results) {
 
     results.forEach(result => {
         const row = document.createElement('tr');
-        result.forEach(cell => {
+        result.forEach((cell, index) => {
             const td = document.createElement('td');
-            td.textContent = cell;
+            td.textContent = `${headers[index]}: ${cell}`;
             row.appendChild(td);
         });
         tbody.appendChild(row);
