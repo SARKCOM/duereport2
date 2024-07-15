@@ -3,13 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Excel Data Search</title>
+    <title>Jamnalal Parekh Finance Pvt. Ltd</title>
     <style>
         body {
             font-family: Arial, sans-serif;
+            background-color: #f0f8ff; /* Light blue background */
+            color: #333; /* Dark gray text */
+            margin: 0;
+            padding: 0;
         }
         .container {
             margin: 20px;
+            display: none; /* Hide the container initially */
+            background-color: #fff; /* White background */
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1); /* Soft shadow */
         }
         .search-container {
             margin-bottom: 20px;
@@ -17,10 +26,84 @@
         .results {
             margin-top: 20px;
         }
+        #password-container {
+            margin: 20px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        h1, h2, p {
+            color: #555; /* Dark gray text */
+        }
+        h2 {
+            font-size: 24px; /* Customize subheading font size */
+        }
+        p {
+            font-size: 16px; /* Customize paragraph font size */
+            color: #666; /* Customize paragraph text color */
+        }
+        input[type="password"],
+        input[type="text"] {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 200px;
+            margin-right: 10px;
+            font-size: 14px;
+            outline: none;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #008080; /* Teal button color */
+            color: #fff; /* White text */
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #005555; /* Darker teal on hover */
+        }
+        select {
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            outline: none;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid #008080; /* Teal border */
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #008080; /* Teal header */
+            color: white; /* White text */
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2; /* Light gray for even rows */
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div id="password-container">
+        <h1>Jamnalal Parekh Finance Pvt. Ltd</h1>
+        <h2>Leading Financial Solutions Provider</h2>
+        <p>Your trusted partner for all financial needs.</p>
+        <p>Providing quality services since 1990.</p>
+        <input type="password" id="password-input" placeholder="Password">
+        <button onclick="checkPassword()">Submit</button>
+    </div>
+    <div class="container" id="main-container">
         <h1>Search Excel Data</h1>
         <div class="search-container">
             <select id="column-select"></select>
