@@ -72,4 +72,50 @@ function displayResults(results) {
     resultsDiv.innerHTML = '';
 
     if (results.length === 0) {
-       
+        resultsDiv.textContent = 'No results found';
+        return;
+    }
+
+    results.forEach(result => {
+        const table = document.createElement('table');
+        const tbody = document.createElement('tbody');
+
+        result.forEach((cell, index) => {
+            if (cell !== "" && cell !== undefined) { // Exclude blank cells
+                const row = document.createElement('tr');
+                const th = document.createElement('th');
+                const td = document.createElement('td');
+
+                th.textContent = excelData[0][index];
+
+                // Check if the cell is an Excel date serial number
+                if (typeof cell === 'number' && isExcelDate(cell)) {
+                    td.textContent = convertExcelDate(cell);
+                } else {
+                    td.textContent = cell;
+                }
+
+                row.appendChild(th);
+                row.appendChild(td);
+                tbody.appendChild(row);
+            }
+        });
+
+        table.appendChild(tbody);
+        resultsDiv.appendChild(table);
+    });
+}
+
+function isExcelDate(value) {
+    // Excel date serial numbers are typically large integers
+    return value > 25569; // January 1, 1970, in Excel date serial number
+}
+
+function convertExcelDate(excelSerial) {
+    // Excel date serial numbers are days since January 1, 1900
+    // JavaScript dates are milliseconds since January 1, 1970
+    const excelEpoch = new Date(1899, 11, 30); // Excel incorrectly treats 1900 as a leap year
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const jsDate = new Date(excelEpoch.getTime() + excelSerial * msPerDay);
+    return jsDate.toLocaleDateString(); // Format date as needed
+}
