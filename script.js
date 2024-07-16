@@ -23,10 +23,9 @@ function loadExcelData() {
         .then(data => {
             const workbook = XLSX.read(data, { type: 'array' });
             const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-            excelData = XLSX.utils.sheet_to_json(firstSheet, { header: 1, raw: true });
+            excelData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
 
             console.log('Excel Data:', excelData); // Debugging
-            convertFirstColumnDates();
             populateColumnSelect();
         })
         .catch(error => {
@@ -34,61 +33,41 @@ function loadExcelData() {
         });
 }
 
-function convertFirstColumnDates() {
-    if (excelData.length > 0) {
-        excelData = excelData.map(row => {
-            if (typeof row[0] === 'number' && isExcelDate(row[0])) {
-                row[0] = convertExcelDate(row[0]);
-            }
-            return [row[0]]; // Keep only the first column
-        });
-    }
-}
-
-function isExcelDate(value) {
-    // Excel date serial numbers are typically large integers
-    return value > 25569; // January 1, 1970, in Excel date serial number
-}
-
-function convertExcelDate(excelSerial) {
-    // Excel date serial numbers are days since January 1, 1900
-    // JavaScript dates are milliseconds since January 1, 1970
-    const excelEpoch = new Date(1899, 11, 30); // Excel incorrectly treats 1900 as a leap year
-    const msPerDay = 24 * 60 * 60 * 1000;
-    const jsDate = new Date(excelEpoch.getTime() + excelSerial * msPerDay);
-    return jsDate.toLocaleDateString(); // Format date as needed
-}
-
 function populateColumnSelect() {
     const columnSelect = document.getElementById('column-select');
-    columnSelect.innerHTML = ''; // Clear previous options
+    const headers = excelData[0];
 
-    const option = document.createElement('option');
-    option.value = 0;
-    option.textContent = 'Date';
-    columnSelect.appendChild(option);
+    headers.forEach((header, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = header;
+        columnSelect.appendChild(option);
+    });
 
-    console.log('Column Select Populated'); // Debugging
+    console.log('Headers:', headers); // Debugging
 }
 
 function searchData() {
+    const columnSelect = document.getElementById('column-select');
     const searchInput = document.getElementById('search-input');
     const searchTerm = searchInput.value.toLowerCase();
+    const columnIndex = parseInt(columnSelect.value, 10); // Ensure column index is an integer
 
+    console.log('Selected Column Index:', columnIndex); // Debugging
     console.log('Search Term:', searchTerm); // Debugging
 
     const results = excelData.slice(1).filter(row => {
-        if (row[0] !== undefined) {
-            return row[0].toLowerCase().includes(searchTerm);
+        if (row[columnIndex] !== undefined) {
+            return row[columnIndex].toString().toLowerCase().includes(searchTerm);
         }
         return false;
     });
 
     console.log('Search Results:', results); // Debugging
-    displayResults(results);
+    displayResults(results, columnIndex);
 }
 
-function displayResults(results) {
+function displayResults(results, columnIndex) {
     const resultsDiv = document.getElementById('results');
     resultsDiv.innerHTML = '';
 
@@ -101,18 +80,40 @@ function displayResults(results) {
         const table = document.createElement('table');
         const tbody = document.createElement('tbody');
 
-        const row = document.createElement('tr');
-        const th = document.createElement('th');
-        const td = document.createElement('td');
+        result.forEach((cell, index) => {
+            if (cell !== "" && cell !== undefined) { // Exclude blank cells
+                const row = document.createElement('tr');
+                const th = document.createElement('th');
+                const td = document.createElement('td');
 
-        th.textContent = 'Date'; // Fixed header for the first column
-        td.textContent = result[0];
+                th.textContent = excelData[0][index];
 
-        row.appendChild(th);
-        row.appendChild(td);
-        tbody.appendChild(row);
+                if (index === columnIndex && typeof cell === 'number' && isExcelDate(cell)) {
+                    td.textContent = convertExcelDate(cell);
+                } else {
+                    td.textContent = cell;
+                }
+
+                row.appendChild(th);
+                row.appendChild(td);
+                tbody.appendChild(row);
+            }
+        });
 
         table.appendChild(tbody);
         resultsDiv.appendChild(table);
     });
 }
+
+function isExcelDate(value) {
+    return value > 25569; // January 1, 1970, in Excel date serial number
+}
+
+function convertExcelDate(excelSerial) {
+    const excelEpoch = new Date(1899, 11, 30); // Excel incorrectly treats 1900 as a leap year
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const jsDate = new Date(excelEpoch.getTime() + excelSerial * msPerDay);
+    return jsDate.toLocaleDateString(); // Format date as needed
+}
+
+document.getElementById('search-button').addEventListener('click', searchData);
