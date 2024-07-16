@@ -26,45 +26,39 @@ function loadExcelData() {
             excelData = XLSX.utils.sheet_to_json(firstSheet, { header: 1, raw: true });
 
             console.log('Excel Data:', excelData); // Debugging
-            populateColumnSelect();
+            convertFirstRowDates();
         })
         .catch(error => {
             console.error('Error fetching or processing the Excel file:', error); // Debugging
         });
 }
 
-function populateColumnSelect() {
-    const columnSelect = document.getElementById('column-select');
-    const headers = excelData[0];
+function convertFirstRowDates() {
+    if (excelData.length > 0) {
+        const firstRow = excelData[0];
+        const convertedRow = firstRow.map(cell => {
+            if (typeof cell === 'number' && isExcelDate(cell)) {
+                return convertExcelDate(cell);
+            }
+            return cell;
+        });
 
-    headers.forEach((header, index) => {
-        const option = document.createElement('option');
-        option.value = index;
-        option.textContent = header;
-        columnSelect.appendChild(option);
-    });
-
-    console.log('Headers:', headers); // Debugging
+        displayResults([convertedRow]);
+    }
 }
 
-function searchData() {
-    const columnSelect = document.getElementById('column-select');
-    const searchInput = document.getElementById('search-input');
-    const searchTerm = searchInput.value.toLowerCase();
-    const columnIndex = parseInt(columnSelect.value, 10); // Ensure column index is an integer
+function isExcelDate(value) {
+    // Excel date serial numbers are typically large integers
+    return value > 25569; // January 1, 1970, in Excel date serial number
+}
 
-    console.log('Selected Column Index:', columnIndex); // Debugging
-    console.log('Search Term:', searchTerm); // Debugging
-
-    const results = excelData.slice(1).filter(row => {
-        if (row[columnIndex] !== undefined) {
-            return row[columnIndex].toString().toLowerCase().includes(searchTerm);
-        }
-        return false;
-    });
-
-    console.log('Search Results:', results); // Debugging
-    displayResults(results);
+function convertExcelDate(excelSerial) {
+    // Excel date serial numbers are days since January 1, 1900
+    // JavaScript dates are milliseconds since January 1, 1970
+    const excelEpoch = new Date(1899, 11, 30); // Excel incorrectly treats 1900 as a leap year
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const jsDate = new Date(excelEpoch.getTime() + excelSerial * msPerDay);
+    return jsDate.toLocaleDateString(); // Format date as needed
 }
 
 function displayResults(results) {
@@ -87,13 +81,7 @@ function displayResults(results) {
                 const td = document.createElement('td');
 
                 th.textContent = excelData[0][index];
-
-                // Check if the cell is an Excel date serial number
-                if (typeof cell === 'number' && isExcelDate(cell)) {
-                    td.textContent = convertExcelDate(cell);
-                } else {
-                    td.textContent = cell;
-                }
+                td.textContent = cell;
 
                 row.appendChild(th);
                 row.appendChild(td);
@@ -104,18 +92,4 @@ function displayResults(results) {
         table.appendChild(tbody);
         resultsDiv.appendChild(table);
     });
-}
-
-function isExcelDate(value) {
-    // Excel date serial numbers are typically large integers
-    return value > 25569; // January 1, 1970, in Excel date serial number
-}
-
-function convertExcelDate(excelSerial) {
-    // Excel date serial numbers are days since January 1, 1900
-    // JavaScript dates are milliseconds since January 1, 1970
-    const excelEpoch = new Date(1899, 11, 30); // Excel incorrectly treats 1900 as a leap year
-    const msPerDay = 24 * 60 * 60 * 1000;
-    const jsDate = new Date(excelEpoch.getTime() + excelSerial * msPerDay);
-    return jsDate.toLocaleDateString(); // Format date as needed
 }
