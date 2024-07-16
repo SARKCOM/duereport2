@@ -23,7 +23,7 @@ function loadExcelData() {
         .then(data => {
             const workbook = XLSX.read(data, { type: 'array' });
             const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-            excelData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+            excelData = XLSX.utils.sheet_to_json(firstSheet, { header: 1, raw: true });
 
             console.log('Excel Data:', excelData); // Debugging
             populateColumnSelect();
@@ -72,30 +72,4 @@ function displayResults(results) {
     resultsDiv.innerHTML = '';
 
     if (results.length === 0) {
-        resultsDiv.textContent = 'No results found';
-        return;
-    }
-
-    results.forEach(result => {
-        const table = document.createElement('table');
-        const tbody = document.createElement('tbody');
-
-        result.forEach((cell, index) => {
-            if (cell !== "" && cell !== undefined) { // Exclude blank cells
-                const row = document.createElement('tr');
-                const th = document.createElement('th');
-                const td = document.createElement('td');
-
-                th.textContent = excelData[0][index];
-                td.textContent = cell;
-
-                row.appendChild(th);
-                row.appendChild(td);
-                tbody.appendChild(row);
-            }
-        });
-
-        table.appendChild(tbody);
-        resultsDiv.appendChild(table);
-    });
-}
+       
