@@ -27,6 +27,7 @@ function loadExcelData() {
 
             console.log('Excel Data:', excelData); // Debugging
             convertFirstColumnDates();
+            populateColumnSelect();
         })
         .catch(error => {
             console.error('Error fetching or processing the Excel file:', error); // Debugging
@@ -35,17 +36,12 @@ function loadExcelData() {
 
 function convertFirstColumnDates() {
     if (excelData.length > 0) {
-        const convertedData = excelData.map(row => {
-            const newRow = [];
+        excelData = excelData.map(row => {
             if (typeof row[0] === 'number' && isExcelDate(row[0])) {
-                newRow.push(convertExcelDate(row[0]));
-            } else {
-                newRow.push(row[0]);
+                row[0] = convertExcelDate(row[0]);
             }
-            return newRow;
+            return [row[0]]; // Keep only the first column
         });
-
-        displayResults(convertedData);
     }
 }
 
@@ -61,6 +57,35 @@ function convertExcelDate(excelSerial) {
     const msPerDay = 24 * 60 * 60 * 1000;
     const jsDate = new Date(excelEpoch.getTime() + excelSerial * msPerDay);
     return jsDate.toLocaleDateString(); // Format date as needed
+}
+
+function populateColumnSelect() {
+    const columnSelect = document.getElementById('column-select');
+    columnSelect.innerHTML = ''; // Clear previous options
+
+    const option = document.createElement('option');
+    option.value = 0;
+    option.textContent = 'Date';
+    columnSelect.appendChild(option);
+
+    console.log('Column Select Populated'); // Debugging
+}
+
+function searchData() {
+    const searchInput = document.getElementById('search-input');
+    const searchTerm = searchInput.value.toLowerCase();
+
+    console.log('Search Term:', searchTerm); // Debugging
+
+    const results = excelData.slice(1).filter(row => {
+        if (row[0] !== undefined) {
+            return row[0].toLowerCase().includes(searchTerm);
+        }
+        return false;
+    });
+
+    console.log('Search Results:', results); // Debugging
+    displayResults(results);
 }
 
 function displayResults(results) {
@@ -80,7 +105,7 @@ function displayResults(results) {
         const th = document.createElement('th');
         const td = document.createElement('td');
 
-        th.textContent = "Date"; // Fixed header for the first column
+        th.textContent = 'Date'; // Fixed header for the first column
         td.textContent = result[0];
 
         row.appendChild(th);
