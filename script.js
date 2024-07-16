@@ -26,24 +26,26 @@ function loadExcelData() {
             excelData = XLSX.utils.sheet_to_json(firstSheet, { header: 1, raw: true });
 
             console.log('Excel Data:', excelData); // Debugging
-            convertFirstRowDates();
+            convertFirstColumnDates();
         })
         .catch(error => {
             console.error('Error fetching or processing the Excel file:', error); // Debugging
         });
 }
 
-function convertFirstRowDates() {
+function convertFirstColumnDates() {
     if (excelData.length > 0) {
-        const firstRow = excelData[0];
-        const convertedRow = firstRow.map(cell => {
-            if (typeof cell === 'number' && isExcelDate(cell)) {
-                return convertExcelDate(cell);
+        const convertedData = excelData.map(row => {
+            const newRow = [];
+            if (typeof row[0] === 'number' && isExcelDate(row[0])) {
+                newRow.push(convertExcelDate(row[0]));
+            } else {
+                newRow.push(row[0]);
             }
-            return cell;
+            return newRow;
         });
 
-        displayResults([convertedRow]);
+        displayResults(convertedData);
     }
 }
 
@@ -74,20 +76,16 @@ function displayResults(results) {
         const table = document.createElement('table');
         const tbody = document.createElement('tbody');
 
-        result.forEach((cell, index) => {
-            if (cell !== "" && cell !== undefined) { // Exclude blank cells
-                const row = document.createElement('tr');
-                const th = document.createElement('th');
-                const td = document.createElement('td');
+        const row = document.createElement('tr');
+        const th = document.createElement('th');
+        const td = document.createElement('td');
 
-                th.textContent = excelData[0][index];
-                td.textContent = cell;
+        th.textContent = "Date"; // Fixed header for the first column
+        td.textContent = result[0];
 
-                row.appendChild(th);
-                row.appendChild(td);
-                tbody.appendChild(row);
-            }
-        });
+        row.appendChild(th);
+        row.appendChild(td);
+        tbody.appendChild(row);
 
         table.appendChild(tbody);
         resultsDiv.appendChild(table);
