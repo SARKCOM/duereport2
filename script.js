@@ -37,14 +37,14 @@ function populateColumnSelect() {
     const columnSelect = document.getElementById('column-select');
     const headers = excelData[0];
 
-    headers.forEach((header, index) => {
+    headers.slice(0, 10).forEach((header, index) => {
         const option = document.createElement('option');
         option.value = index;
         option.textContent = header;
         columnSelect.appendChild(option);
     });
 
-    console.log('Headers:', headers); // Debugging
+    console.log('Headers:', headers.slice(0, 10)); // Debugging
 }
 
 function searchData() {
@@ -77,18 +77,74 @@ function displayResults(results, columnIndex) {
     }
 
     results.forEach(result => {
-        const table = document.createElement('table');
-        const tbody = document.createElement('tbody');
+        const horizontalTable = document.createElement('table');
+        const horizontalThead = document.createElement('thead');
+        const horizontalTbody = document.createElement('tbody');
+        const headerRow = document.createElement('tr');
+        const dataRow = document.createElement('tr');
 
-        result.forEach((cell, index) => {
+        // Create header row and data row for the first 10 columns
+        result.slice(0, 10).forEach((cell, index) => {
+            const th = document.createElement('th');
+            const td = document.createElement('td');
+
+            th.textContent = excelData[0][index];
+
+            if (index === columnIndex && typeof cell === 'number' && isExcelDate(cell)) {
+                td.textContent = convertExcelDate(cell);
+            } else {
+                td.textContent = cell;
+            }
+
+            headerRow.appendChild(th);
+            dataRow.appendChild(td);
+        });
+
+        horizontalThead.appendChild(headerRow);
+        horizontalTbody.appendChild(dataRow);
+        horizontalTable.appendChild(horizontalThead);
+        horizontalTable.appendChild(horizontalTbody);
+
+        resultsDiv.appendChild(horizontalTable);
+
+        // Add "Payment History" line
+        const paymentHistoryLine = document.createElement('div');
+        paymentHistoryLine.textContent = 'Payment History';
+        paymentHistoryLine.style.marginTop = '10px';
+        paymentHistoryLine.style.marginBottom = '10px';
+        paymentHistoryLine.style.fontWeight = 'bold';
+        resultsDiv.appendChild(paymentHistoryLine);
+
+        // Add "Date of Payment" and "Amount Paid" text
+        const paymentInfoDiv = document.createElement('div');
+        paymentInfoDiv.style.display = 'flex';
+        paymentInfoDiv.style.justifyContent = 'space-between';
+
+        const dateOfPayment = document.createElement('div');
+        dateOfPayment.textContent = 'Date of Payment';
+        dateOfPayment.style.fontWeight = 'bold';
+
+        const amountPaid = document.createElement('div');
+        amountPaid.textContent = 'Amount Paid';
+        amountPaid.style.fontWeight = 'bold';
+
+        paymentInfoDiv.appendChild(dateOfPayment);
+        paymentInfoDiv.appendChild(amountPaid);
+        resultsDiv.appendChild(paymentInfoDiv);
+
+        // Create vertical table for the remaining columns
+        const verticalTable = document.createElement('table');
+        const verticalTbody = document.createElement('tbody');
+
+        result.slice(10).forEach((cell, index) => {
             if (cell !== "" && cell !== undefined) { // Exclude blank cells
                 const row = document.createElement('tr');
                 const th = document.createElement('th');
                 const td = document.createElement('td');
 
-                th.textContent = excelData[0][index];
+                th.textContent = excelData[0][index + 10];
 
-                if (index === columnIndex && typeof cell === 'number' && isExcelDate(cell)) {
+                if ((index + 10) === columnIndex && typeof cell === 'number' && isExcelDate(cell)) {
                     td.textContent = convertExcelDate(cell);
                 } else {
                     td.textContent = cell;
@@ -96,12 +152,12 @@ function displayResults(results, columnIndex) {
 
                 row.appendChild(th);
                 row.appendChild(td);
-                tbody.appendChild(row);
+                verticalTbody.appendChild(row);
             }
         });
 
-        table.appendChild(tbody);
-        resultsDiv.appendChild(table);
+        verticalTable.appendChild(verticalTbody);
+        resultsDiv.appendChild(verticalTable);
     });
 }
 
@@ -117,3 +173,15 @@ function convertExcelDate(excelSerial) {
 }
 
 document.getElementById('search-button').addEventListener('click', searchData);
+const apiKey = 'YOUR_API_KEY';
+const city = 'London';
+const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}`;
+
+fetch(url)
+  .then(response => response.json())
+  .then(data => {
+    console.log(data);
+    document.getElementById('weather').innerText = `Temperature: ${data.main.temp}°C`;
+  })
+  .catch(error => console.error('Error:', error));
+
